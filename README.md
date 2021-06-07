@@ -1,4 +1,4 @@
-# Key-Value database Tarantool
+# Key-Value storage Tarantool
 
 ### Configure:
 [config](https://github.com/tarantool/http)
