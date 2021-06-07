@@ -12,12 +12,19 @@ docker run -p 8888:8888 --name mytarantool -t mytarantool
 ```
 After this, you have available to `http://localhost:8888` , where `localhost` is IP by your docker deamon
 
+If you suddenly forgot how to delete a container in docker:
+```
+- docker ps
+- docker stop [id_conteiner]
+- docker rm [id_conteiner]
+```
+
 ### Tests:
 Before run tests open at browser `http://localhost:8888`
 
 Run tests on new console with:
 ```
-./Test.py `localhost`
+./Test.py [localhost]
 ```
 
 ### Api:
