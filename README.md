@@ -1,5 +1,7 @@
 # Key-Value database Tarantool
 
+### Configure:
+[config](https://github.com/tarantool/http)
 
 ### Build:
 - Download tarantool [here](https://www.tarantool.io/ru/)
@@ -39,3 +41,13 @@ Run tests on new console with:
 - POST возвращает 409 если ключ уже существует,
 - POST, PUT возвращают 400 если боди некорректное
 - PUT, GET, DELETE возвращает 404 если такого ключа нет - все операции логируются
+
+### About Key Value Storage:
+To start a server with a router:
+
+Create a server with server = require('http.server').new(...).
+Create a router with router = require('http.router').new(...).
+Set a router to server with server:set_router(router).
+Configure routing with router:route(...).
+Start serving HTTP requests it with server:start().
+To stop the server, use server:stop().
