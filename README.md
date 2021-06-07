@@ -1,26 +1,32 @@
-# MAIL RU(TARANTOOL) COMPANY TEST TASK
-## Key-Value database Tarantool
+# Key-Value database Tarantool
 
-### MAIL RU(TARANTOOL) COMPANY TEST TASK
 
 ### Build:
-- Download tarantool [here](https://www.tarantool.io/ru/).
-- Download Docker if you haven't docker on your machine
+- Download tarantool [here](https://www.tarantool.io/ru/)
+- Download Docker if you haven't docker on your machine [here](https://www.docker.com/products/docker-desktop)
 
 ### Run:
 ```
 docker run -p 8888:8888 --name tarantool-api-server -t tarantool-api-server
 ```
-After this, you have available to `http://localhost:8888` , where 'localhost' is IP by your docker deamon
+After this, you have available to `http://localhost:8888` , where `localhost` is IP by your docker deamon
 
-### TESTS
-Run tests on console with:
+### Tests:
+Before run tests open at browser `http://localhost:8888`
+
+Run tests on new console with:
 ```
-./tests.py `localhost`
+./Test.py `localhost`
 ```
 
-### API
-POST     | /kv      | {"key":<string>, "value":<arbitrary_json>}   | 200 OK, 400 Bad Request, 409 Conflict  |
-PUT      | /kv/{id} | {"value":<arbitrary_json>}                   | 200 OK, 400 Bad Request, 404 Not Found |
-GET      | /kv/{id} | none                                          | 200 OK, 404 Not Found |
-DELETE   | /kv/{id} | none                                          | 200 OK, 404 Not Found |
+### Api:
+- POST /kv body: {key: "test", "value": {SOME ARBITRARY JSON}}
+- PUT kv/{id} body: {"value": {SOME ARBITRARY JSON}}
+- GET kv/{id}
+- DELETE kv/{id}
+
+-----------------------------------------------------------------------------
+
+- POST возвращает 409 если ключ уже существует,
+- POST, PUT возвращают 400 если боди некорректное
+- PUT, GET, DELETE возвращает 404 если такого ключа нет - все операции логируются
