@@ -26,6 +26,7 @@ Run tests on new console with:
 ```
 ./Test.py [localhost]
 ```
+![alt text](screen.png)​
 
 ### Api:
 - POST /kv body: {key: "test", "value": {SOME ARBITRARY JSON}}
