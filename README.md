@@ -19,7 +19,11 @@ Run tests on console with:
 ```
 
 ### API
-POST     | /kv      | {"key":<string>, "value":<arbitrary_json>}   | 200 OK, 400 Bad Request, 409 Conflict  |
-PUT      | /kv/{id} | {"value":<arbitrary_json>}                   | 200 OK, 400 Bad Request, 404 Not Found |
-GET      | /kv/{id} | none                                          | 200 OK, 404 Not Found |
-DELETE   | /kv/{id} | none                                          | 200 OK, 404 Not Found |
+- POST /kv body: {key: "test", "value": {SOME ARBITRARY JSON}} 
+- PUT kv/{id} body: {"value": {SOME ARBITRARY JSON}} 
+- GET kv/{id} 
+- DELETE kv/{id} 
+
+- POST возвращает 409 если ключ уже существует, 
+- POST, PUT возвращают 400 если боди некорректное 
+- PUT, GET, DELETE возвращает 404 если такого ключа нет - все операции логируются
