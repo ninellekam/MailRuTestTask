@@ -1,7 +1,6 @@
 # MAIL RU(TARANTOOL) COMPANY TEST TASK
 ## Key-Value database Tarantool
 
-### MAIL RU(TARANTOOL) COMPANY TEST TASK
 
 ### Build:
 - Download tarantool [here](https://www.tarantool.io/ru/).
