@@ -7,7 +7,8 @@
 
 ### Run:
 ```
-docker run -p 8888:8888 --name tarantool-api-server -t tarantool-api-server
+docker build . -t mytarantool
+docker run -p 8888:8888 --name mytarantool -t mytarantool
 ```
 After this, you have available to `http://localhost:8888` , where `localhost` is IP by your docker deamon
 
