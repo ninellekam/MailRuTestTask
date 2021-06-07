@@ -1,139 +1,95 @@
-local json = require("json")
+#!/usr/bin/env tarantool
 
--- KeyValue Database
-local kv_storage = {
+local http  = require("http.server")
+local json  = require("json")
+space_name = 'kv-test'
 
-	set_storage = function(self, storage)
-		self.s = storage
-		self.index = storage.index.kv_index
-	end,
-
-	insert = function(self, key, value)
-		if (#(self.index:select(key)) ~= 0)
-			return false
-		end
-		self.s:insert{nil, key, value}
-		return true
-	end,
-
-	get_value = function(self, key, value)
-		return self.index:select(key)[1]["value"]
-	end,
-
-	delete = function(self, key)
-		if (not #(self.index:select(key)) ~= 0)
-			return false
-		end
-		self.s:delete(self.index:select(key)[1]["id"])
-		return true
-	end,
-
-	update = function(self, key, value)
-		if (not #(self.index:select(key)) ~= 0)
-			return false
-		end
-		self.s:update(self.index:select(key)[1]["id"], {{'=', 3, value}})
-		return true
-	end
+box.cfg {
+	log = 'kv.log',
+	log_format='json'
 }
 
-kv_storage.__index = kv_storage
-kv_storage:set_storage(box.space.storage)
+box.schema.space.create(space_name, { if_not_exists = true })
+pk = box.space[space_name]:create_index('primary', {
+	if_not_exists = true,
+	unique = true,
+	parts = { 1, 'string' }
+})
 
-local function delete_excess(str)
-	if (str == nil) then
-		return nil
-	end
-	local start, finish = string.find(str, "/[^/]*$")
-	return string.sub(str, start + 1, finish)
+local function http_json(code, data)
+	return {
+			status = code,
+			headers = { ['content-type'] = 'application/json' },
+			body = json.encode(data)
+	}
 end
 
 local methods_library = {
 	post = function(req)
-		-- take the body from request
-		local body = req:json()
-		-- check body
-		if (body.key == nil or body.value == nil) then
-			return {status = 400}
+		local k = req:param('key')
+		local v = req:param('value')
+
+		if type(k) ~= 'string' or type(v) ~= 'table' then
+			return http_json(400, { message = 'Bad request body.' })
 		end
-		-- insert body
-		if (kv_storage:insert(body.key, json.encode(body.value))) then
-			return {status = 200}
-		else
-			return {status = 409}
+
+		if box.space[space_name]:get{ k } ~= nil then
+			return http_json(409, { message = 'This key already exists.' })
 		end
+
+		box.space[space_name]:insert{ k, v }
+
+		return http_json(200, { key = k, value = v })
 	end,
 
 	put = function(req)
-		local key = delete_excess(req.path)
-		-- take the body from request
-		local body = req:json()
-		-- check body
-		if (body.value == nil or #key == 0) then
-			return {status = 400}
-		end
-		-- update body
-		if (kv_storage:update(key, json.encode(body.value))) then
-			return {status = 200}
-		else
-			return {status = 404}
+		local id = req:stash('id')
+		local v = req:param('value')
+
+		if type(v) ~= 'table' then
+			return http_json(400, { message = 'Bad request body.' })
 		end
 
+		pair = box.space[space_name]:get{ id }
+
+		if pair ~= nil then
+			new_pair = box.space[space_name]:update(id, { { '=', 2, v } })
+
+			return http_json(200, { key = id, value = new_pair[2] })
+		else
+			return http_json(404, { message = 'Pair with this key doesn\'t exist.' })
+		end
 	end,
 
 	delete = function(req)
-		key = delete_excess(req.path)
-		-- check empty
-		if (#key == 0) then
-			return {status = 400}
-		end
-		-- delete
-		if (kv_storage:delete(key)) then
-			return {status = 200}
+		local id = req:stash('id')
+
+		pair = box.space[space_name]:get{ id }
+
+		if pair ~= nil then
+			box.space[space_name]:delete(id)
+			return http_json(200, { message = 'Deleted.' })
 		else
-			return {status = 404}
+			return http_json(404, { message = 'Pair with this key doesn\'t exist' })
 		end
 	end,
 
 	get = function(req)
-		key = delete_excess(req.path)
-		-- check empty
-		if (#key == 0) then
-			return {status = 400}
-		end
-		-- if not empty then get
-		if (#(self.index:select(key)) ~= 0) then
-			return {status = 200, body = kv_storage:get_value(key)}
+		local id = req:stash('id')
+		pair = box.space[space_name]:get{ id }
+
+		if pair ~= nil then
+			return http_json(200, { key = id, value = pair[2] })
 		else
-			return {status  = 404}
+			return http_json(404, { message = 'Pair with this key doesn\'t exist.' })
 		end
 	end
 }
 
--- Creating a server
--- server = require('http.server').new(host, port[, { options } ])
-local server = require("http.server").new("0.0.0.0", 8888, { log_requests = true })
+local server = http.new("0.0.0.0", 8888, { log_requests = true })
 
--- from tarantool web-site
-box.cfg({listen = 3301})
-box.once("setup", function()
-	s = box.schema.space.create("storage")
-	box.schema.sequence.create("AutoIncr")
-	s:format({{name = "id", type = "unsigned"}, {name = "key", type = "string"}, {name = "value", type = "string"}})
-	s:create_index("primary", {
-		sequence = "AutoIncr",
-		type = "hash",
-		parts = {"id"}
-	})
-	s:create_index("kv_index", {
-		type = "hash",
-		parts = {"key"}
-	})
-	end
-)
-
-server:route({path = "/kv", method = "POST"}, methods_library.post)
-server:route({path = "/kv/.*", method = "PUT"}, methods_library.put)
-server:route({path = "/kv/.*", method = "DELETE"}, methods_library.delete)
-server:route({path = "/kv/.*", method = "GET"}, methods_library.get)
+server:route({ path = '/kv', method = 'POST' }, methods_library.post)
+server:route({ path = '/kv/:id', method = 'PUT' }, methods_library.put)
+server:route({ path = '/kv/:id', method = 'GET' }, methods_library.get)
+server:route({ path = '/kv/:id', method = 'DELETE' }, methods_library.delete)
 server:start()
