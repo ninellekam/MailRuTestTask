@@ -17,7 +17,7 @@ Run tests on console with:
 ./tests.py `localhost`
 ```
 
-### API
+### Api:
 - POST /kv body: {key: "test", "value": {SOME ARBITRARY JSON}} 
 - PUT kv/{id} body: {"value": {SOME ARBITRARY JSON}} 
 - GET kv/{id} 
