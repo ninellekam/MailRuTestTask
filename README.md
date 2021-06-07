@@ -2,7 +2,7 @@
 
 
 ### Build:
-- Download tarantool [here](https://www.tarantool.io/ru/).
+- Download tarantool [here](https://www.tarantool.io/ru/)
 - Download Docker if you haven't docker on your machine [here](https://www.docker.com/products/docker-desktop)
 
 ### Run:
