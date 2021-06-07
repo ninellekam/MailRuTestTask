@@ -1,5 +1,4 @@
-# MAIL RU(TARANTOOL) COMPANY TEST TASK
-## Key-Value database Tarantool
+# Key-Value database Tarantool
 
 
 ### Build:
