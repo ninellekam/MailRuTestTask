@@ -50,4 +50,4 @@ To start a server with a router:
 - Set a router to server with `server:set_router(router)`.
 - Configure routing with router:route(...).
 - Start serving HTTP requests it with `server:start()`.
-- To stop the server, use `server:stop()`.
+	- To stop the server, use `server:stop()`.
