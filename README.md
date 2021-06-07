@@ -11,7 +11,7 @@ docker run -p 8888:8888 --name tarantool-api-server -t tarantool-api-server
 ```
 After this, you have available to `http://localhost:8888` , where `localhost` is IP by your docker deamon
 
-### TESTS
+### Tests:
 Run tests on console with:
 ```
 ./tests.py `localhost`
