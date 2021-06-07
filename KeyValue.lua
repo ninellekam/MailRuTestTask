@@ -24,36 +24,36 @@ local function http_json(code, data)
 	}
 end
 
-local methods_library = {
+local kv_storage = {
 	post = function(req)
-		local k = req:param('key')
-		local v = req:param('value')
+		local key = req:param('key')
+		local value = req:param('value')
 
-		if type(k) ~= 'string' or type(v) ~= 'table' then
+		if type(key) ~= 'string' or type(value) ~= 'table' then
 			return http_json(400, { message = 'Bad request body.' })
 		end
 
-		if box.space[space_name]:get{ k } ~= nil then
+		if box.space[space_name]:get{ key } ~= nil then
 			return http_json(409, { message = 'This key already exists.' })
 		end
 
-		box.space[space_name]:insert{ k, v }
+		box.space[space_name]:insert{ key, value }
 
-		return http_json(200, { key = k, value = v })
+		return http_json(200, { key = key, value = value })
 	end,
 
 	put = function(req)
 		local id = req:stash('id')
-		local v = req:param('value')
+		local value = req:param('value')
 
-		if type(v) ~= 'table' then
+		if type(value) ~= 'table' then
 			return http_json(400, { message = 'Bad request body.' })
 		end
 
 		pair = box.space[space_name]:get{ id }
 
 		if pair ~= nil then
-			new_pair = box.space[space_name]:update(id, { { '=', 2, v } })
+			new_pair = box.space[space_name]:update(id, { { '=', 2, value } })
 
 			return http_json(200, { key = id, value = new_pair[2] })
 		else
@@ -88,8 +88,8 @@ local methods_library = {
 
 local server = http.new("0.0.0.0", 8888, { log_requests = true })
 
-server:route({ path = '/kv', method = 'POST' }, methods_library.post)
-server:route({ path = '/kv/:id', method = 'PUT' }, methods_library.put)
-server:route({ path = '/kv/:id', method = 'GET' }, methods_library.get)
-server:route({ path = '/kv/:id', method = 'DELETE' }, methods_library.delete)
+server:route({ path = '/kv', method = 'POST' }, kv_storage.post)
+server:route({ path = '/kv/:id', method = 'PUT' }, kv_storage.put)
+server:route({ path = '/kv/:id', method = 'GET' }, kv_storage.get)
+server:route({ path = '/kv/:id', method = 'DELETE' }, kv_storage.delete)
 server:start()
